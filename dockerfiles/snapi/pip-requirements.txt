@@ -1,0 +1,17 @@
+Flask-SQLAlchemy
+alembic
+flask
+flask-cors
+freezegun
+gunicorn
+ipdb
+marshmallow
+mock
+psycopg2
+pytest
+pytest-cov
+pytest-flask
+pytest-pep8
+requests
+slackclient
+sqlalchemy
