@@ -5,7 +5,7 @@ from marshmallow import Schema, fields
 # # -- Models --
 class UserVoice(db.Model):
     __tablename__ = 'user_voice'
-    uiid = db.Column(db.BigInteger, nullable=False, primary_key=True)
+    session_id = db.Column(db.BigInteger, nullable=False, primary_key=True)
     location = db.Column(db.String, nullable=False)
     user = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -26,7 +26,7 @@ class VoiceProfile(db.Model):
 
 class ConvertedVoice(db.Model):
     __tablename__ = 'converted_voice'
-    uiid = db.Column(db.String, nullable=False, primary_key=True)
+    session_id = db.Column(db.String, nullable=False, primary_key=True)
     location = db.Column(db.String, nullable=False)
     user = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False)
@@ -34,12 +34,12 @@ class ConvertedVoice(db.Model):
 
 # -- Schemas --
 class UserVoiceSchema(Schema):
-    uiid = fields.String()
+    session_id = fields.String()
     location = fields.String()
     user = fields.String()
 
 
-class VoiceProfileSchema(db.Model):
+class VoiceProfileSchema(Schema):
     name = fields.String()
     version = fields.String()
     model_location = fields.String()
@@ -47,14 +47,15 @@ class VoiceProfileSchema(db.Model):
     user = fields.String()
 
 
-class ConvertedVoiceSchema(db.Model):
-    uiid = fields.String()
+class ConvertedVoiceSchema(Schema):
+    session_id = fields.String()
     location = fields.String()
     user = fields.String()
 
 
 class InferenceSchema(Schema):
     session_id = fields.String()
+    user_voice_location = fields.String()
     voice_profile_id = fields.Integer()
 
 
