@@ -6,6 +6,7 @@ docker run -it --rm \
   -v ~/morgan-freeman:/morgan-freeman \
   -v ~/guang-deep-voice-conversion:/guang-deep-voice-conversion \
   -v ~/TIMIT:/freeman_data/TIMIT \
+  -v ~/inference:/freeman_data/inference \
   -v ~/freeman_log:/freeman_data/logdir \
   -v ~/morgan-freeman/secrets:/etc/configs \
   guangyang/morgan-freeman:latest

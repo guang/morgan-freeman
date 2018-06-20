@@ -25,7 +25,7 @@ default:
     # train
     batch_size: 32
 
-logdir_path: '/data/private/vc/logdir'
+logdir_path: '/freeman_data/logdir'
 
 train1:
     # path
@@ -91,7 +91,7 @@ test2:
 ---
 convert:
     # path
-    data_path: '/data/private/vc/datasets/arctic/bdl/*.wav'
+    data_path: '/freeman_data/inference/*.wav'
 
     # convert
     one_full_wav: False
