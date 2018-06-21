@@ -1,0 +1,22 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "snapi",
+    "labels": {
+      "name": "snapi"
+    }
+  },
+  "spec": {
+    "ports": [
+      {
+        "port": 80,
+        "targetPort": 8000
+      }
+    ],
+    "selector": {
+      "name": "snapi"
+    },
+    "type": "LoadBalancer"
+  }
+}

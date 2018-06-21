@@ -1,0 +1,85 @@
+{
+  "kind": "ReplicationController",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "inference-controller",
+    "labels": {
+      "name": "inference"
+    }
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "name": "inference"
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "name": "inference"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "snapi",
+            "image": "guangyang/morgan-freeman:latest",
+            "command": ["tail", "-f", "/etc/hosts"],
+            "env": [
+              {
+                "name": "HOME",
+                "value": "/home/dev"
+              },
+              {
+                "name": "PYTHONPATH",
+                "value": "/home/dev/morgan-freeman"
+              },
+              {
+                "name": "MORGAN_FREEMAN_BRANCH_NAME",
+                "value": "3-flask"
+              },
+              {
+                "name": "SNAPI_CONFIGS_PATH",
+                "value": "/etc/configs/snapi.cfg"
+              }
+            ],
+            "ports": [
+              {
+                "containerPort": 8000
+              }
+            ],
+            "resources": {
+              "requests": {
+                "cpu": "500m"
+              }
+            },
+            "volumeMounts": [
+              {
+                "name": "snapi-configs-vol",
+                "mountPath": "/etc/configs"
+              },
+              {
+                "name": "tmp",
+                "mountPath": ""
+              },
+            ]
+          }
+        ],
+        "securityContext": {
+          "runAsUser": 0
+        },
+        "volumes": [
+          {
+            "name": "snapi-configs-vol",
+            "secret": {
+              "secretName": "snapi-configs"
+            }
+          },
+          {
+            "name": "tmp_data",
+            "emptyDir": {}
+          }
+        ]
+      }
+    }
+  }
+}
