@@ -1,4 +1,4 @@
-tensorflow-gpu >= 1.1
+tensorflow-gpu == 1.8.0
 numpy >= 1.11.1
 librosa == 0.5.1
 tensorpack == 0.8.0
@@ -7,3 +7,20 @@ soundfile
 pydub
 git+https://github.com/wookayin/tensorflow-plot.git@master
 tqdm
+Flask-SQLAlchemy
+alembic
+flask
+flask-cors
+freezegun
+gunicorn
+ipdb
+marshmallow
+mock
+psycopg2
+pytest
+pytest-cov
+pytest-flask
+pytest-pep8
+requests
+slackclient
+sqlalchemy

@@ -98,7 +98,7 @@ def do_convert(args, logdir1, logdir2):
     audio, y_audio, ppgs = convert(predictor, df)
 
     # TODO make me into an input
-    args.output_path = '/data/private/vc/datasets/arctic/test_output.wav'
+    args.output_path = '/freeman_data/inference/test_output.wav'
 
     write_wav(audio[0], hp.default.sr, args.output_path)
 
