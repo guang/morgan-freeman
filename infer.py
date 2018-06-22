@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 import datetime
 import tensorflow as tf
+import time
 
 from deep_voice_conversion.models import Net2
 from deep_voice_conversion.audio import (
@@ -25,7 +26,6 @@ from tensorpack.predict.base import OfflinePredictor
 from tensorpack.predict.config import PredictConfig
 from tensorpack.tfutils.sessinit import SaverRestore
 from tensorpack.tfutils.sessinit import ChainInit
-from tensorpack.callbacks.base import Callback
 
 
 def convert(predictor, df):
@@ -98,7 +98,11 @@ def do_convert(args, logdir1, logdir2):
     audio, y_audio, ppgs = convert(predictor, df)
 
     # TODO make me into an input
-    args.output_path = '/freeman_data/inference/test_output.wav'
+    result_name = 'infer-result' + ckpt2.replace('/', '-') + '-' + str(int(time.time())) + '.wav'
+    args.output_path = '/freeman_data/inference/{}'.format(result_name)
+    print("---------------------------------------------------------")
+    print("INFO: Wrote test result to {}".format(args.output_path))
+    print("---------------------------------------------------------")
 
     write_wav(audio[0], hp.default.sr, args.output_path)
 

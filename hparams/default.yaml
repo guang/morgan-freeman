@@ -91,7 +91,7 @@ test2:
 ---
 convert:
     # path
-    data_path: '/freeman_data/inference/*.wav'
+    data_path: '/freeman_data/inference/infer_input/*.wav'
 
     # convert
     one_full_wav: False
