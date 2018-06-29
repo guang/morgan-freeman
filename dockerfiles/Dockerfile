@@ -1,13 +1,14 @@
-FROM debian:jessie
+FROM tensorflow/tensorflow:1.8.0-gpu
 MAINTAINER Guang Yang <garry.yangguang@gmail.com>
-
-WORKDIR /home/dev
-ENV HOME /home/dev
 
 RUN apt-get update -y && apt-get install -y \
     wget \
+    sox \
+    libsndfile1-dev \
+    git \
     curl \
     net-tools \
+    ffmpeg \
     unzip \
     python \
     ruby \
@@ -27,16 +28,16 @@ RUN apt-get update -y && apt-get install -y \
     python-matplotlib \
     python-lxml \
     python-scipy \
+    awscli \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-# Not the most updated pip cos im not hipster enough
-RUN curl -s https://bootstrap.pypa.io/get-pip.py > get-pip.py \
- && python get-pip.py pip==7.1.2
 
 ADD pip-requirements.txt /pip-requirements.txt
 RUN pip install -r /pip-requirements.txt
 
+# Add deep-voice-conversion
+
 # Start-up script
-ADD clone_repos.sh /clone_repos.sh
-RUN chmod +x /clone_repos.sh
+ADD startup_script.sh /startup_script.sh
+RUN chmod +x /startup_script.sh

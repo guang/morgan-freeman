@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.8.0-gpu
+FROM tensorflow/tensorflow:1.8.0
 MAINTAINER Guang Yang <garry.yangguang@gmail.com>
 
 RUN apt-get update -y && apt-get install -y \
@@ -33,11 +33,11 @@ RUN apt-get update -y && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 
-ADD pip-requirements.txt /pip-requirements.txt
-RUN pip install -r /pip-requirements.txt
+ADD pip-requirements.txt /cpu-pip-requirements.txt
+RUN pip install -r /cpu-pip-requirements.txt
 
-# Add deep-voice-conversion
-RUN wget https://s3-us-west-2.amazonaws.com/bwhoyouwant2-be-data/public/deep_voice_conversion-1.0-py2.7.egg && easy_install deep_voice_conversion-1.0-py2.7.egg
+# Ghetto work-around #TODO fix this
+RUN pip uninstall -y tensorflow && pip uninstall -y tensorflow-gpu && pip install tensorflow
 
 # Start-up script
 ADD startup_script.sh /startup_script.sh

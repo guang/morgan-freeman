@@ -1,8 +1,9 @@
-# TARGET="/Users/guangyang/idk_wat"
+# TARGET="/Users/guangyang/idk_wat/*"
 TARGET=$1
 
-cp -r "$TARGET" /Users/guangyang/tmp_preprocessing
-cd /Users/guangyang/tmp_preprocessing
+rm -rf ${HOME}/tmp_preprocessing
+cp -r "$TARGET" ${HOME}/tmp_preprocessing
+cd ${HOME}/tmp_preprocessing
 counter=1
 
 for file in *.mp3

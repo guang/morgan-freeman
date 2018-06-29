@@ -1,4 +1,4 @@
-tensorflow-gpu == 1.8.0
+tensorflow == 1.8.0
 numpy >= 1.11.1
 librosa == 0.5.1
 tensorpack == 0.8.0
@@ -24,3 +24,4 @@ pytest-pep8
 requests
 slackclient
 sqlalchemy
+boto3

@@ -2,20 +2,20 @@
   "kind": "ReplicationController",
   "apiVersion": "v1",
   "metadata": {
-    "name": "snapi-rc",
+    "name": "staging-snapi-rc",
     "labels": {
-      "name": "snapi"
+      "name": "staging-snapi"
     }
   },
   "spec": {
     "replicas": 1,
     "selector": {
-      "name": "snapi"
+      "name": "staging-snapi"
     },
     "template": {
       "metadata": {
         "labels": {
-          "name": "snapi"
+          "name": "staging-snapi"
         }
       },
       "spec": {
@@ -84,7 +84,7 @@
               },
               {
                 "name": "GIT_SYNC_BRANCH",
-                "value": "master"
+                "value": "staging"
               }
             ],
             "volumeMounts": [

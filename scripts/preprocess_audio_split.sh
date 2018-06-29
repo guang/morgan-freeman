@@ -1,7 +1,8 @@
-IN_PATH='/Users/guangyang/tmp_preprocessing'
+IN_PATH="${HOME}/tmp_preprocessing"
 TIME=3
-mkdir /Users/guangyang/tmp_preprocessing_split
+rm -rf ${HOME}/tmp_preprocessing_split
+mkdir ${HOME}/tmp_preprocessing_split
 cd ${IN_PATH}
 find . -name '*.wav' \
- -exec sh -c 'mkdir -p /Users/guangyang/tmp_preprocessing_split/$(dirname "{}")' \; \
- -exec sox {} /Users/guangyang/tmp_preprocessing_split/{}  trim 0 ${TIME} : newfile : restart \;
+ -exec sh -c "mkdir -p ${HOME}/tmp_preprocessing_split/$(dirname '{}')" \; \
+ -exec sox {} ${HOME}/tmp_preprocessing_split/{}  trim 0 ${TIME} : newfile : restart \;
