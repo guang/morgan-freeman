@@ -2,24 +2,29 @@ from flask import (
     Flask,
     flash,
     request,
-    jsonify,
     render_template,
     redirect,
-    url_for,
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from settings import snapi_logger
-# from datetime import datetime
 from util import (
     s3_to_local,
     data_to_s3,
     allowed_file,
 )
-from os.path import basename
-# import json
 import uuid
-# import requests
+# TODO: OOooff this is janky lets remove
+import subprocess
+
+
+# TODO put this into utils
+LOG_DIR_1 = "/s3_data/model/current/train1"
+LOG_DIR_2 = "/s3_data/model/current/{voice_profile_id}/train2"
+CURRENT_VOICE_PROFILES = [
+    {'name': 'Robo Style Judy Greer', 'id': 1},
+    {'name': 'Robo Style James Earl Jones', 'id': 2},
+]
 
 
 def create_app():
@@ -33,7 +38,7 @@ db = SQLAlchemy(app)
 
 CORS(app)
 
-from models import *    # NOQA
+from db_models import *    # NOQA
 
 
 @app.route('/')
@@ -61,87 +66,59 @@ def upload_wav():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             session_id = str(uuid.uuid4())
-            # saved_path = '/home/dev/' + session_id + '.wav'
-            # file.save(saved_path)
-            # snapi_logger.info("file saved to {}".format(saved_path))
             s3_key = 'user_data/' + session_id + '.wav'
             data_to_s3(file, s3_key)
             snapi_logger.info("file saved to {}".format(s3_key))
-            return redirect(url_for('check_status', session_id=session_id))
-    return render_template('upload_wav.html')
+
+            new_inference(
+                session_id=session_id,
+                voice_profile_id=int(request.form.get('chosen_vprofile')),
+            )
+            return render_template('play.html', session_id=session_id)
+
+    return render_template('upload_wav.html', voice_profiles=CURRENT_VOICE_PROFILES)
 
 
-@app.route('/check_status/<session_id>', methods=['GET', 'POST'])
-def check_status(session_id):
-    return "hey cutie :) ur session_id is {}".format(session_id)
+def new_inference(session_id, voice_profile_id):
 
-# @app.route('/api/v1/user_voice', methods=['POST'])
-# def new_user_voice():
-#     # params
-#     json_data = request.get_json(force=True)
-#     if not json_data:
-#         return jsonify({'message': 'No input data provided'}), 400
-#
-#     # Validate and deserialize input
-#     data, errors = user_voice_schema.load(json_data)
-#     if errors:
-#         return jsonify(errors), 422
-#
-#     data['created_at'] = datetime.now()
-#     user_voice = UserVoice(**data)
-#     db.session.add(user_voice)
-#     db.session.commit()
-#
-#     return jsonify(
-#         {
-#             "message": "",
-#             "session_id": base_metric.id,
-#         }
-#     )
-
-
-@app.route('/api/v1/infer/<session_id>', methods=['POST'])
-def new_inference(session_id):
-    # params
-    json_data = request.get_json(force=True)
-    if not json_data:
-        return jsonify({'message': 'No input data provided'}), 400
-
-    # Validate and deserialize input
-    data, errors = inference_schema.load(json_data)   # NOQA
-
-    # pull user voice data
+    # pull user voice data and save it to tmp local
     # override if given input #TODO: remove me
-    s3_loc = data['user_voice_location']
-    if not s3_loc:
-        raise Exception("Sorry not implemented yet, please give user_voice_location")
-        # get_s3_location_by_session_id(session_id=, table=UserVoice.__tablename__)
+    s3_key = 'user_data/' + session_id + '.wav'
 
-    tmp_loc = '{path}/{base}'.format(path='/tmp/', base=basename(s3_loc))
-    snapi_logger.info("storing input file temporarily at '{}'".format(tmp_loc))
+    # TODO: clean up names right now to avoid creating new dirs
+    raw_tmp_loc = '{prefix}/raw-{local_path}'.format(prefix='/tmp', local_path=s3_key.replace('/', '-'))
+    tmp_loc = '{prefix}/{local_path}'.format(prefix='/tmp', local_path=s3_key.replace('/', '-'))
+    tmp_out_loc = '{prefix}/{local_path}'.format(prefix='/tmp', local_path='out'+s3_key.replace('/', '-'))
+    snapi_logger.info("storing input file temporarily at '{}'".format(raw_tmp_loc))
 
-    s3_to_local(s3_loc, tmp_loc)
+    s3_to_local(s3_key, raw_tmp_loc)
+
+    # --- resample from 44100 to 16000, oouuff this is pretty flimsy ---
+    cmd_to_run_resample = """sox {RAW} -r 16000 {INPUT}""".format(
+        RAW=raw_tmp_loc,
+        INPUT=tmp_loc,
+    )
+    snapi_logger.info("running resampling, with command '{}'".format(cmd_to_run_resample))
+    subprocess.check_call(cmd_to_run_resample, shell=True)
 
     # run inference
     # remember to put this in PYTHONPATH
-    # from infer import do_convert
-    # do_convert(
-    #     args,
-    #     logdir1,
-    #     logdir2
-    # )
+    snapi_logger.info("running inference, with logdir2 {}".format(LOG_DIR_2.format(voice_profile_id=voice_profile_id)))
+    cmd_to_run_inference = """cd $HOME/morgan-freeman/snapi && python infer.py {LOG_DIR_1} {LOG_DIR_2} -input_path {INPUT_PATH} -output_path {OUTPUT_PATH}""".format(
+        LOG_DIR_1=LOG_DIR_1,
+        LOG_DIR_2=LOG_DIR_2.format(voice_profile_id=voice_profile_id),
+        INPUT_PATH=tmp_loc,
+        OUTPUT_PATH=tmp_out_loc,
+    )
+
+    snapi_logger.info("running inference, with command '{}'".format(cmd_to_run_inference))
+    subprocess.check_call(cmd_to_run_inference, shell=True)
 
     # push converted voice data
-    # import pdb; pdb.set_trace()
-    if errors:
-        return jsonify(errors), 422
-
-    return jsonify(
-        {
-            "message": "Created new inference.",
-            "converted_voice_location": 'TODO',
-        }
-    )
+    s3_out_key = 'inference/' + session_id + '.wav'
+    snapi_logger.info("finished running inference, uploading to {}".format(s3_out_key))
+    with open(tmp_out_loc, 'rb') as temp_wav:
+        data_to_s3(temp_wav, s3_out_key, bucket_name='bwhoyouwant2-be-data-public')
 
 
 @app.route('/version', methods=['GET'])

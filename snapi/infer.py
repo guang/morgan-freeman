@@ -10,18 +10,18 @@ import argparse
 import numpy as np
 import datetime
 import tensorflow as tf
-import time
+import librosa
 
-from deep_voice_conversion.models import Net2
-from deep_voice_conversion.audio import (
+from models import Net2
+from audio import (
     spec2wav,
     inv_preemphasis,
     db2amp,
     denormalize_db,
     write_wav,
 )
-from deep_voice_conversion.hparam import hparam as hp
-from deep_voice_conversion.data_load import Net2DataFlow
+from hparam import hparam as hp
+from data_load import Net2DataFlow
 from tensorpack.predict.base import OfflinePredictor
 from tensorpack.predict.config import PredictConfig
 from tensorpack.tfutils.sessinit import SaverRestore
@@ -29,6 +29,7 @@ from tensorpack.tfutils.sessinit import ChainInit
 
 
 def convert(predictor, df):
+    # TODO need to fix reading in with duration
     pred_spec, y_spec, ppgs = predictor(next(df().get_data()))
 
     # Denormalizatoin
@@ -69,25 +70,22 @@ def get_eval_output_names():
     return ['pred_spec', 'y_spec', 'ppgs']
 
 
-def do_convert(args, logdir1, logdir2):
+def do_convert(logdir1, logdir2, input_path, output_path):
     # Load graph
     model = Net2()
-    # TODO auto detect duration, dont chop
+    model.actual_duration = librosa.core.get_duration(filename=input_path, sr=hp.default.sr)
 
     # TODO isolate out logdirs, uhh and how to pre-dl from s3?
 
-    # TODO make this into an input
-    args.input_path = hp.convert.data_path
-    assert len(args.input_path) > 0, "must be non-empty input path"
-    df = Net2DataFlow(data_path=args.input_path, batch_size=1)
+    assert len(input_path) > 0, "must be non-empty input path"
+
+    df = Net2DataFlow(data_path=input_path, batch_size=1)
 
     ckpt1 = tf.train.latest_checkpoint(logdir1)
-    ckpt2 = '{}/{}'.format(logdir2, args.ckpt) if args.ckpt else tf.train.latest_checkpoint(logdir2)
+    ckpt2 = tf.train.latest_checkpoint(logdir2)
     session_inits = []
-    if ckpt2:
-        session_inits.append(SaverRestore(ckpt2))
-    if ckpt1:
-        session_inits.append(SaverRestore(ckpt1, ignore=['global_step']))
+    session_inits.append(SaverRestore(ckpt2))
+    session_inits.append(SaverRestore(ckpt1, ignore=['global_step']))
     pred_conf = PredictConfig(
         model=model,
         input_names=get_eval_input_names(),
@@ -97,39 +95,27 @@ def do_convert(args, logdir1, logdir2):
 
     audio, y_audio, ppgs = convert(predictor, df)
 
-    # TODO make me into an input
-    result_name = 'infer-result' + ckpt2.replace('/', '-') + '-' + str(int(time.time())) + '.wav'
-    args.output_path = '/freeman_data/inference/{}'.format(result_name)
-    print("---------------------------------------------------------")
-    print("INFO: Wrote test result to {}".format(args.output_path))
-    print("---------------------------------------------------------")
-
-    write_wav(audio[0], hp.default.sr, args.output_path)
+    write_wav(audio[0], hp.default.sr, output_path)
 
 
 def get_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('case1', type=str, help='experiment case name of train1')
-    parser.add_argument('case2', type=str, help='experiment case name of train2')
-    parser.add_argument('-ckpt', help='checkpoint to load model.')
-    # TODO: make these into mandatory positional arguments
+    parser.add_argument('logdir1', type=str, help='full path to logdir of train1')
+    parser.add_argument('logdir2', type=str, help='full path to logdir of train2')
     parser.add_argument('-input_path', help='absolute path to input .wav file')
     parser.add_argument('-output_path', help='absolute path to output .wav file')
+    parser.add_argument('-ckpt', help='checkpoint to load model.')
+    # TODO: make these into mandatory positional arguments
     arguments = parser.parse_args()
     return arguments
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    hp.set_hparam_yaml(args.case2)
-    logdir_train1 = '{}/{}/train1'.format(hp.logdir_path, args.case1)
-    logdir_train2 = '{}/{}/train2'.format(hp.logdir_path, args.case2)
-
-    print('case1: {}, case2: {}, logdir1: {}, logdir2: {}'.format(args.case1, args.case2, logdir_train1, logdir_train2))
 
     s = datetime.datetime.now()
 
-    do_convert(args, logdir1=logdir_train1, logdir2=logdir_train2)
+    do_convert(logdir1=args.logdir1, logdir2=args.logdir2, input_path=args.input_path, output_path=args.output_path)
 
     e = datetime.datetime.now()
     diff = e - s

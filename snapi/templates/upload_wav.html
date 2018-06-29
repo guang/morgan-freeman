@@ -2,6 +2,14 @@
 <title>Upload new wav file</title>
 <h1>Upload new wav file</h1>
 <form method=post enctype=multipart/form-data>
+  <div class="input-group">
+      <span class="input-group-addon">Please select</span>
+          <select name="chosen_vprofile" class="selectpicker form-control">
+            {% for vprofile in voice_profiles %}
+            <option value="{{ vprofile.id }}">{{ vprofile.name }}</option>
+            {% endfor %}
+          </select>
+  </div>
   <p><input type=file name=file>
      <input type=submit value=Upload>
 </form>

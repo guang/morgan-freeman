@@ -14,13 +14,13 @@ def s3_to_local(key, local_path):
     ))
 
 
-def data_to_s3(data, key):
+def data_to_s3(data, key, bucket_name=BUCKET_NAME):
     """ Upload source_file to given key on S3
 
     """
-    new_store = s3.Object(BUCKET_NAME, key)
+    new_store = s3.Object(bucket_name, key)
     snapi_logger.info("Uploading data to '{remote}'".format(
-        remote=BUCKET_NAME + key,
+        remote=bucket_name + '/' + key,
     ))
     new_store.put(Body=data)
 

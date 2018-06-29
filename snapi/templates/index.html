@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Let's Prank Some Fools</title>
+    <title>Sound Like Someone Else</title>
 
     <!-- Bootstrap core CSS -->
     <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -23,6 +23,17 @@
 
     <!-- Custom styles for this template -->
     <link href="{{ url_for('static', filename='css/creative.min.css') }}" rel="stylesheet">
+    <style>
+      button{
+        margin: 10px 5px;
+      }
+      li{
+        margin: 10px;
+      }
+      #btns{
+        display: none;
+      }
+    </style>
 
   </head>
 
@@ -44,23 +55,41 @@
       </div>
     </nav>
 
+    <!-- Main Thang -->
     <header class="masthead text-center text-white d-flex">
       <div class="container my-auto">
         <div class="row">
+
           <div class="col-lg-10 mx-auto">
             <h1 class="text-uppercase">
-              <strong>let's prank some fools</strong>
+              <strong>Voice Style-Transfer</strong>
             </h1>
             <hr>
           </div>
+
           <div class="col-lg-8 mx-auto">
             <p class="text-faded mb-5">This app let's you change your voice to sound like one of our pre-selected celebrities</p>
-            <a class="btn btn-primary btn-xl js-scroll-trigger" href="{{ url_for('upload_wav') }}">let's go</a>
+            <div id="gUMArea">
+              <a class="btn btn-primary btn-xl js-scroll-trigger" id="gUMbtn" href="https://webaudiodemos.appspot.com/AudioRecorder/index.html">record a voice sample! (this doesnt work right now, sad face)</a>
+            </div>
+            <div id="btns">
+              <button class="btn btn-default" id="start">Start</button>
+              <button class="btn btn-default" id="stop">Stop</button>
+            </div>
+            <div>
+              <ul class="list-unstyled" id="ul"></ul>
+            </div>
           </div>
+
+          <div class="col-lg-8 mx-auto">
+            <a class="btn btn-primary" href="{{ url_for('upload_wav') }}">Have a voice clip? upload here</a>
+          </div>
+
         </div>
       </div>
     </header>
 
+    <!-- Contact -->
     <section id="contact">
       <div class="container">
         <div class="row">
@@ -96,6 +125,7 @@
 
     <!-- Custom scripts for this template -->
     <script src="{{ url_for('static', filename='js/creative.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
 
   </body>
 
