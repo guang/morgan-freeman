@@ -1,4 +1,6 @@
-# TARGET="/Users/guangyang/idk_wat/*"
+set -e
+
+# TARGET="/Users/guangyang/idk_wat"
 TARGET=$1
 
 rm -rf ${HOME}/tmp_preprocessing

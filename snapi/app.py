@@ -5,7 +5,6 @@ from flask import (
     render_template,
     redirect,
 )
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from settings import snapi_logger
 from util import (
@@ -22,8 +21,8 @@ import subprocess
 LOG_DIR_1 = "/s3_data/model/current/train1"
 LOG_DIR_2 = "/s3_data/model/current/{voice_profile_id}/train2"
 CURRENT_VOICE_PROFILES = [
-    {'name': 'Robo Style Judy Greer', 'id': 1},
-    {'name': 'Robo Style James Earl Jones', 'id': 2},
+    {'name': 'Judy Greer', 'id': 1},
+    {'name': 'James Earl Jones', 'id': 2},
 ]
 
 
@@ -34,11 +33,7 @@ def create_app():
 
 
 app = create_app()
-db = SQLAlchemy(app)
-
 CORS(app)
-
-from db_models import *    # NOQA
 
 
 @app.route('/')
@@ -119,6 +114,11 @@ def new_inference(session_id, voice_profile_id):
     snapi_logger.info("finished running inference, uploading to {}".format(s3_out_key))
     with open(tmp_out_loc, 'rb') as temp_wav:
         data_to_s3(temp_wav, s3_out_key, bucket_name='bwhoyouwant2-be-data-public')
+
+
+@app.route('/play/<session_id>', methods=['GET'])
+def play(session_id):
+    return render_template('play.html', session_id=session_id)
 
 
 @app.route('/version', methods=['GET'])
