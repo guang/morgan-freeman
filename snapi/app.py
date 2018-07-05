@@ -23,6 +23,7 @@ LOG_DIR_2 = "/s3_data/model/current/{voice_profile_id}/train2"
 CURRENT_VOICE_PROFILES = [
     {'name': 'Judy Greer', 'id': 1},
     {'name': 'James Earl Jones', 'id': 2},
+    {'name': 'Samuel Jackson', 'id': 4},
 ]
 
 
