@@ -1,6 +1,6 @@
 from flask import (
     Flask,
-    # flash,
+    flash,
     request,
     render_template,
     redirect,
@@ -55,13 +55,13 @@ def upload_wav():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
-            # flash('No file part')
+            flash('No file part')
             return redirect(request.url)
         file = request.files['file']
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
-            # flash('No selected file')
+            flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
             session_id = str(uuid.uuid4())
@@ -78,7 +78,6 @@ def upload_wav():
             else:
                 # flash(error)
                 return error
-                return render_template('upload_wav.html', voice_profiles=CURRENT_VOICE_PROFILES)
 
     return render_template('upload_wav.html', voice_profiles=CURRENT_VOICE_PROFILES)
 
@@ -96,7 +95,10 @@ def new_inference(session_id, voice_profile_id):
     snapi_logger.info("storing input file temporarily at '{}'".format(raw_tmp_loc))
 
     s3_to_local(s3_key, raw_tmp_loc)
+
     # -- validate duration not too long --
+    # TODO: ran into some file handler problem so taking a shortcut here but
+    # this validation should happen immediately after file is read in
     with contextlib.closing(wave.open(raw_tmp_loc, 'r')) as f:
         frames = f.getnframes()
         rate = f.getframerate()
